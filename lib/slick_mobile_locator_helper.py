@@ -180,7 +180,7 @@ class Gen:
 
     @staticmethod
     def get_element_contains(element_type, value, text):
-        from mobile_locator import SlickMobileLocator, Find
+        from slick_mobile_locator import SlickMobileLocator, Find
         return SlickMobileLocator("Element contains text for value xpath", Find.by_xpath('//{}[{}]'.format(element_type, Gen.get_xpath_contains(value, text))))
 
     @staticmethod
@@ -195,6 +195,10 @@ class Gen:
     @staticmethod
     def get_element_by_xpath_text(text):
         return Gen.get_element_contains(Gen.TEXT_VIEW, "text", text)
+
+    @staticmethod
+    def get_ios_predicate_type(tag_type):
+        return "type == '{}'".format(tag_type)
 
     @staticmethod
     def get_android_id(text):
