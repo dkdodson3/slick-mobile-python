@@ -246,13 +246,87 @@ class SlickMobileLocator:
 
         return text.encode('utf-8') if text else ""
 
+    def wait_for(self, description, func, timeout=60, interval=.5, throw_exception=False):
+        """
+        This is for waiting until the lambda function returns True
+        :param description:
+        :param func:
+        :param timeout:
+        :param interval:
+        :param throw_exception:
+        :return:
+        """
+
+        attempt = 1
+        print "\nWaiting {} seconds for: {} to be".format(timeout, description)
+        timer = Timer(timeout)
+        last_result = False
+        error_message = None
+        try:
+            last_result = func()
+        except:
+            pass
+        while not last_result and not timer.is_past_timeout():
+            try:
+                last_result = func()
+            except Exception as e:
+                print e.message
+                error_message = e.message
+
+            print "Still not found... attempt: {}".format(attempt)
+            time.sleep(interval)
+            attempt += 1
+
+        print "Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        if throw_exception and not last_result:
+            raise Exception("Timeout failed with: {}".format(error_message))
+
+        return last_result
+
+    def wait_for_not(self, description, func, timeout=60, interval=.5, throw_exception=False):
+        """
+        This is for waiting until the lambda function returns False
+
+        :param description:
+        :param func:
+        :param timeout:
+        :param interval:
+        :param throw_exception:
+        :return:
+        """
+        attempt = 1
+        print "\nWaiting {} seconds for: {} to not be".format(timeout, description)
+        timer = Timer(timeout)
+        last_result = False
+        error_message = None
+        try:
+            last_result = func()
+        except:
+            pass
+        while last_result and not timer.is_past_timeout():
+            try:
+                last_result = func()
+            except Exception as e:
+                print e.message
+                error_message = e.message
+
+            print "Still found... attempt: {}".format(attempt)
+            time.sleep(interval)
+            attempt += 1
+
+        print "Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        if throw_exception and last_result:
+            raise Exception("Timeout failed with: {}".format(error_message))
+
+        return last_result
+
     def exists(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True):
         if refresh:
             self.gimme(timeout=timeout, log=log, num=num, throw_exception=throw_exception)
 
         return self.element is not None
 
-    def is_displayed(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True):
+    def is_displayed(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True, wait_for_interval=.5):
         if not self.exists(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh):
             return False
 
@@ -261,12 +335,7 @@ class SlickMobileLocator:
             if self.element is None:
                 return False
 
-        displayed = self.is_element_displayed(self.element)
-
-        if not displayed and throw_exception:
-            raise Exception("Element was not displayed: {}".format(self.desc))
-
-        return displayed
+        return self.wait_for("Waiting for the {} element to be displayed".format(self.desc), lambda: self.is_element_displayed(self.element), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
     def is_element_displayed(self, element):
         if element is None:
@@ -301,15 +370,15 @@ class SlickMobileLocator:
 
         return True
 
-    def is_enabled(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True):
-        if self.is_displayed(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh):
-            return self.element.is_enabled()
+    def is_enabled(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True, wait_for_interval=.5):
+        if self.is_displayed(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh, wait_for_interval=wait_for_interval):
+            return self.wait_for("Waiting for the {} element to be enabled".format(self.desc), lambda: self.element.is_enabled(), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
         return False
 
-    def is_selected(self, timeout=5, log=True, num=None, refresh=True):
-        if self.is_displayed(timeout=timeout, log=log, num=num, refresh=refresh):
-            return self.element.is_selected()
+    def is_selected(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True, wait_for_interval=.5):
+        if self.is_displayed(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh, wait_for_interval=wait_for_interval):
+            return self.wait_for("Waiting for the {} element to be selected".format(self.desc), lambda: self.element.is_selected(), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
         return False
 
@@ -325,50 +394,34 @@ class SlickMobileLocator:
 
         return False
 
-    def not_exists(self, timeout=5, log=True, interval=.5, num=None, refresh=True):
-        timer = Timer(timeout)
-        while not timer.is_past_timeout():
-            if not self.exists(timeout=0, log=log, num=num, refresh=refresh):
-                return True
+    def not_exists(self, timeout=5, log=True, num=None, wait_for_interval=.5, refresh=True, throw_exception=False):
+        if self.exists(timeout=5, log=log, num=num, refresh=refresh):
+            self.wait_for_not("Waiting for the {} element to not be displayed".format(self.desc), lambda: self.exists(timeout=0, log=log, num=num, refresh=refresh), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
-            time.sleep(interval)
+        return True
 
-        return False
+    def is_not_displayed(self, timeout=5, log=True, num=None, wait_for_interval=.5, refresh=True, throw_exception=False):
+        if self.is_displayed(timeout=5, log=log, num=num, refresh=refresh, wait_for_interval=wait_for_interval):
+            return self.wait_for_not("Waiting for the {} element to not be displayed".format(self.desc), lambda: self.is_element_displayed(self.element), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
-    def is_not_displayed(self, timeout=5, log=True, interval=.5, num=None, refresh=True):
-        timer = Timer(timeout)
-        while not timer.is_past_timeout():
-            if not self.is_displayed(timeout=0, log=log, num=num, refresh=refresh):
-                return True
+        return True
 
-            time.sleep(interval)
+    def is_not_enabled(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True, wait_for_interval=.5):
+        if self.is_enabled(timeout=1, log=log, num=num, refresh=refresh, wait_for_interval=wait_for_interval):
+            return self.wait_for_not("Waiting for the {} element to not be enabled".format(self.desc), lambda: self.element.is_enabled(), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
-        return False
+        return True
 
-    def is_not_enabled(self, timeout=5, log=True, interval=.5, num=None):
-        timer = Timer(timeout)
-        while not timer.is_past_timeout():
-            if not self.is_enabled(timeout=0, log=log, num=num):
-                return True
+    def is_not_selected(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True, wait_for_interval=.5):
+        if self.is_selected(timeout=1, log=log, num=num, refresh=refresh, wait_for_interval=wait_for_interval):
+            return self.wait_for_not("Waiting for the {} element to not be selected".format(self.desc), lambda: self.element.is_selected(), timeout=timeout, interval=wait_for_interval, throw_exception=throw_exception)
 
-            time.sleep(interval)
+        return True
 
-        return False
-
-    def is_not_selected(self, timeout=5, log=True, interval=.5, num=None):
-        timer = Timer(timeout)
-        while not timer.is_past_timeout():
-            if not self.is_selected(timeout=0, log=log, num=num):
-                return True
-
-            time.sleep(interval)
-
-        return False
-
-    def tap(self, timeout=10, count=1, offset_x=1, offset_y=1, log=True, wait=0, raise_exception=True, duration=50, num=None, refresh=True):
+    def tap(self, timeout=10, count=1, offset_x=1, offset_y=1, log=True, wait=0, raise_exception=True, duration=50, num=None, refresh=True, wait_for_interval=.5):
         positions = []
 
-        if not self.is_displayed(timeout=timeout, log=log, num=num, refresh=refresh):
+        if not self.is_displayed(timeout=timeout, log=log, num=num, refresh=refresh, wait_for_interval=wait_for_interval):
             msg = "Could not find the '{}' element to tap on.".format(self.desc)
             if isinstance(raise_exception, str):
                 raise Exception(raise_exception)
@@ -400,8 +453,8 @@ class SlickMobileLocator:
 
         return True
 
-    def send_keys(self, keys, timeout=5, log=True, clear=False, hide_keyboard=False, key_name=None, wait=None, tap=False, type=False, num=None, checkmark=False, throw_exception=True, refresh=True):
-        self.is_displayed(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh)
+    def send_keys(self, keys, timeout=5, log=True, clear=False, hide_keyboard=False, key_name=None, wait=None, tap=False, type=False, num=None, checkmark=False, throw_exception=True, refresh=True, wait_for_interval=.5):
+        self.is_displayed(timeout=timeout, log=log, num=num, throw_exception=throw_exception, refresh=refresh, wait_for_interval=wait_for_interval)
 
         if self.element:
             if tap:
