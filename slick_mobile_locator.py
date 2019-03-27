@@ -315,10 +315,13 @@ class SlickMobileLocator:
             attempt += 1
 
         print "Wait for tried: {} times in {} seconds".format(attempt, timeout)
-        if throw_exception and last_result:
-            raise Exception("Timeout failed with: {}".format(error_message))
+        if last_result:
+            if throw_exception:
+                raise Exception("Timeout failed with: {}".format(error_message))
+            else:
+                return False
 
-        return last_result
+        return True
 
     def exists(self, timeout=5, log=True, num=None, throw_exception=False, refresh=True):
         if refresh:
