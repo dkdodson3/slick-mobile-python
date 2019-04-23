@@ -82,7 +82,7 @@ class SlickMobileLocator:
 
     def print_page_source(self):
         import mobile_utils
-        print mobile_utils.get_page_source()
+        print(mobile_utils.get_page_source()
 
     def gimme(self, timeout=10, log=True, throw_exception=False, num=None):
         """
@@ -258,7 +258,7 @@ class SlickMobileLocator:
         """
 
         attempt = 1
-        print "\nWaiting {} seconds for: {} to be".format(timeout, description)
+        print("\nWaiting {} seconds for: {} to be".format(timeout, description)
         timer = Timer(timeout)
         last_result = False
         error_message = None
@@ -270,14 +270,14 @@ class SlickMobileLocator:
             try:
                 last_result = func()
             except Exception as e:
-                print e.message
+                print(e.message
                 error_message = e.message
 
-            print "Still not found... attempt: {}".format(attempt)
+            print("Still not found... attempt: {}".format(attempt)
             time.sleep(interval)
             attempt += 1
 
-        print "Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        print("Wait for tried: {} times in {} seconds".format(attempt, timeout)
         if throw_exception and not last_result:
             raise Exception("Timeout failed with: {}".format(error_message))
 
@@ -295,7 +295,7 @@ class SlickMobileLocator:
         :return:
         """
         attempt = 1
-        print "\nWaiting {} seconds for: {} to not be".format(timeout, description)
+        print("\nWaiting {} seconds for: {} to not be".format(timeout, description)
         timer = Timer(timeout)
         last_result = False
         error_message = None
@@ -307,14 +307,14 @@ class SlickMobileLocator:
             try:
                 last_result = func()
             except Exception as e:
-                print e.message
+                print(e.message
                 error_message = e.message
 
-            print "Still found... attempt: {}".format(attempt)
+            print("Still found... attempt: {}".format(attempt)
             time.sleep(interval)
             attempt += 1
 
-        print "Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        print("Wait for tried: {} times in {} seconds".format(attempt, timeout)
         if last_result:
             if throw_exception:
                 raise Exception("Timeout failed with: {}".format(error_message))
@@ -431,7 +431,7 @@ class SlickMobileLocator:
             elif raise_exception:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg
                 return False
 
         if offset_x != 1 or offset_y != 1:

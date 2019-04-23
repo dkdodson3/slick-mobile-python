@@ -1,7 +1,10 @@
 slick-webdriver
 selenium==3.3.1
-Appium-Python-Client==0.26
+Appium-Python-Client==0.40
+pocketsphinx
 Wand
-chardet==3.0.4
-textract==1.6.1
+textract
 pyocr
+opencv-python-headless
+numpy
+scikit-image

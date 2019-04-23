@@ -1,7 +1,5 @@
 import logging
 from time import sleep
-import appium
-from appium.webdriver.common.mobileby import MobileBy
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver import WebElement
 from selenium.webdriver.remote.command import Command
@@ -10,8 +8,6 @@ from slick_mobile_locator import SlickMobileLocator
 
 
 class SlickMobileApp(Browser):
-    ANDROID_HOME = 3
-
     actual_screen_width = None
     actual_screen_height = None
     screen_width = None
@@ -22,16 +18,17 @@ class SlickMobileApp(Browser):
     device_name = None
     target_device = None
 
-    def __init__(self, desired_capabilities, remote_url, default_timeout=30):
+    def __init__(self, default_timeout=30):
         """
-        Initializing the webdriver client for Appium and not initilizing the parent
+        Initializing the app with the appium driver and not initializing the parent
+        You should inherit from this and replace driver
         :param desired_capabilities:
         :param remote_url:
         :param default_timeout:
         """
         self.default_timeout = default_timeout
-        self.remote_url = remote_url
-        self.desired_capabilities = desired_capabilities
+        # self.remote_url = remote_url
+        # self.desired_capabilities = desired_capabilities
         self.angular_mode = False
 
         # tame the huge logs from webdriver
@@ -39,11 +36,9 @@ class SlickMobileApp(Browser):
         wdlogger.setLevel(logging.WARNING)
         self.logger = logging.getLogger("slickwd.Appium")
 
-        self.wd_instance = appium.webdriver.Remote(command_executor=remote_url, desired_capabilities=desired_capabilities)
-        ''':type: appium.webdriver.Remote'''
-
-        self.driver = self.wd_instance
-        self.driver.implicitly_wait(0)
+        # self.wd_instance = appium.webdriver.Remote(command_executor=remote_url, desired_capabilities=desired_capabilities)
+        # self.driver = self.wd_instance
+        # self.driver.implicitly_wait(0)
 
         self.platform_name = self.get_capabilities()['platformName'].lower()
         self.device_name = self.get_capabilities()['deviceName'].lower()
@@ -59,8 +54,18 @@ class SlickMobileApp(Browser):
     def touch_action(self):
         return TouchAction(self.driver)
 
+    @property
+    def driver(self):
+        """
+        This needs to be instantiated from a child class and should be of type appium.webdriver.Remote
+        """
+        raise NotImplementedError("Need to get the driver from somewhere")
+
+    def set_log_level(self, level):
+        self.logger.setLevel(level)
+
     def get_capabilities(self):
-        return self.desired_capabilities
+        return self.driver.desired_capabilities
 
     def is_android(self):
         return self.platform_name == "android"
@@ -154,9 +159,8 @@ class SlickMobileApp(Browser):
             self.foreground_app_android()
 
     def restart_app(self, seconds=5):
-        from mobile_device import Mobile
         import time
-        if Mobile.app is not None and Mobile.app.driver is not None:
+        if self.driver is not None:
             self.driver.close_app()
             time.sleep(seconds)
             self.driver.launch_app()
@@ -199,9 +203,6 @@ class SlickMobileApp(Browser):
                 try:
                     if key_name:
                         self.driver.hide_keyboard(key_name=key_name)
-                    else:
-                        from feature_properties import base
-                        base.tap_done(keyboard=True)
 
                 except:
                     self.driver.hide_keyboard(key_name="Done")
@@ -214,8 +215,8 @@ class SlickMobileApp(Browser):
 
     def tap_position(self, positions, count=1, duration=50, wait=0, log=True):
         if log:
-            print "Performing a mobile {} taps at positions: {}".format(count, positions)
-        for i in xrange(count):
+            print("Performing a mobile {} taps at positions: {}".format(count, positions))
+        for i in range(count):
             if duration == 0:
                 duration = None
 
@@ -238,7 +239,7 @@ class SlickMobileApp(Browser):
             if loc_one_y - pixel_variation <= loc_two_y <= loc_one_y + pixel_variation:
                 return True
             else:
-                print "The first center y coordinate ({}) wasnt within {} pixels of the second center y coordinate ({}).".format(loc_one_y, pixel_variation, loc_two_y)
+                print("The first center y coordinate ({}) wasnt within {} pixels of the second center y coordinate ({}).".format(loc_one_y, pixel_variation, loc_two_y))
                 return False
         else:
             "The first center x coordinate ({}) wasnt within {} pixels of the second center x coordinate ({}).".format(loc_one_x, pixel_variation, loc_two_x)
@@ -333,7 +334,7 @@ class SlickMobileApp(Browser):
         touch_action.perform()
 
     def scroll_to_element(self, locator, direction="UP", amount=100, start_x=None, start_y=None, allowed=10, timeout=5):
-        for i in xrange(allowed):
+        for i in range(allowed):
             if locator.is_displayed(timeout=timeout, log=False):
                 return True
 
@@ -415,16 +416,16 @@ class SlickMobileApp(Browser):
                 os.remove(filepath)
 
     def save_screenshot(self, screenshot_blob):
-        import mobile_utils
+        from utils import get_epoch_time
         if self.screenshot_dir is None:
-            print "Screenshot directory is: {}".format(self.screenshot_dir)
+            print("Screenshot directory is: {}".format(self.screenshot_dir))
             return
 
         if self.unique_screenshots and self.screenshot_blob == screenshot_blob:
             return
 
         self.screenshot_blob = screenshot_blob
-        image_filepath = "{}/{}.png".format(self.screenshot_dir, mobile_utils.get_epoch_time())
+        image_filepath = "{}/{}.png".format(self.screenshot_dir, get_epoch_time())
         SlickMobileApp.image = SlickMobileApp.create_image_from_screenshot(self.screenshot_blob)
         SlickMobileApp.image.save(filename=image_filepath)
 
@@ -489,9 +490,9 @@ class SlickMobileApp(Browser):
         image2.type = "grayscale"
 
         if image1.page_height != image2.page_height or image1.page_width != image2.page_width:
-            print "#### Height and width did not match ####"
-            print "Image1 page_height = {}, page_width = {}".format(image1.page_height, image1.page_width)
-            print "Image2 page_height = {}, page_width = {}".format(image2.page_height, image2.page_width)
+            print("#### Height and width did not match ####")
+            print("Image1 page_height = {}, page_width = {}".format(image1.page_height, image1.page_width))
+            print("Image2 page_height = {}, page_width = {}".format(image2.page_height, image2.page_width))
             return False, "Image dimensions were not the same"
 
         if metric == "ssim":
@@ -520,7 +521,7 @@ class SlickMobileApp(Browser):
 
         value = ssim(retval1, retval2)
 
-        print "##### {} - IMAGE SSIM VALUE #####".format(value)
+        print("##### {} - IMAGE SSIM VALUE #####".format(value))
 
         # 1 is exact
         # Range 1 to -1
@@ -538,7 +539,7 @@ class SlickMobileApp(Browser):
 
         value = image1.compare(image2, metric="root_mean_square")[1]
 
-        print "###### {} - IMAGE ROOT MEAN SQUARED VALUE #####".format(value)
+        print("###### {} - IMAGE ROOT MEAN SQUARED VALUE #####".format(value))
 
         # 0 is exact
         # Range 0 to infinity + 1
@@ -676,10 +677,10 @@ class SlickMobileApp(Browser):
         # FFMPEG MUST BE INSTALLED
         command = SlickMobileApp.get_video_encoding_command(image_directory, filepath, interval, image_type, video_codec,
                                                        video_width, video_height)
-        print "### Creating the video file: {} ###".format(command)
+        print("### Creating the video file: {} ###".format(command))
         output = subprocess.check_call(command, shell=True)
         if output == 0:
-            print "Created the video at: {}".format(filepath)
+            print("Created the video at: {}".format(filepath))
         else:
             raise Exception("Failed to create the video.")
 
@@ -690,15 +691,13 @@ class SlickMobileApp(Browser):
         :return:
         """
         if self.is_android():
-            from mobile_device import Mobile
-
             start_x, start_y, end_x, end_y = locator.get_rect()
             y = start_y + 2
 
             locator.tap()
-            Mobile.app.swipe_by_coordinates([start_x + 2, y], [end_x - 2, y])
-            Mobile.app.driver.keyevent(keycode=277)
-            Mobile.app.driver.keyevent(keycode=111)
+            self.swipe_by_coordinates([start_x + 2, y], [end_x - 2, y])
+            self.driver.keyevent(keycode=277)
+            self.driver.keyevent(keycode=111)
 
         else:
             self.btn_cut = SlickMobileLocator("Cut text button", Find.by_name("Cut"))
@@ -718,15 +717,13 @@ class SlickMobileApp(Browser):
         :return:
         """
         if self.is_android():
-            from mobile_device import Mobile
-
             start_x, start_y, end_x, end_y = locator.get_rect()
             y = start_y + 2
 
             locator.tap()
-            Mobile.app.swipe_by_coordinates([start_x + 2, y], [end_x - 2, y])
-            Mobile.app.driver.keyevent(keycode=278)
-            Mobile.app.driver.keyevent(keycode=111)
+            self.swipe_by_coordinates([start_x + 2, y], [end_x - 2, y])
+            self.driver.keyevent(keycode=278)
+            self.driver.keyevent(keycode=111)
 
         else:
             self.btn_copy = SlickMobileLocator("copy button", Find.by_name("Copy"))
@@ -746,8 +743,7 @@ class SlickMobileApp(Browser):
         :return:
         """
         if self.is_android():
-            from mobile_device import Mobile
-            touch_action = TouchAction(Mobile.app.driver)
+            touch_action = TouchAction(self.driver)
 
             locator.tap()
 
@@ -759,8 +755,8 @@ class SlickMobileApp(Browser):
             touch_action.release()
             touch_action.perform()
 
-            Mobile.app.driver.keyevent(keycode=279)
-            Mobile.app.driver.keyevent(keycode=111)
+            self.driver.keyevent(keycode=279)
+            self.driver.keyevent(keycode=111)
 
         else:
             self.btn_paste = SlickMobileLocator("paste button", Find.by_name("Paste"))
