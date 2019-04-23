@@ -57,6 +57,7 @@ class SlickMobileApp(Browser):
         raise NotImplementedError("Need to get the driver from somewhere")
 
     def init_stuff(self):
+        self.wd_instance = self.driver
         self.platform_name = self.get_capabilities()['platformName'].lower()
         self.device_name = self.get_capabilities()['deviceName'].lower()
         self.target_device = "{}_{}".format(self.platform_name, self.get_version())
