@@ -3,12 +3,8 @@ import time
 from appium.webdriver import WebElement
 from slickwd import WebElementLocator, Find, Timer
 
-from slick_mobile_app import SlickMobileApp
-from slick_mobile_locator_helper import Gen
-
-
 class SlickMobileLocator:
-    def __init__(self, desc, finder, attr=None, text=None, parent=None, num=None, visible=False, tag_name=None, case_insensitive=True, throw_exception=None, app=None):
+    def __init__(self, desc, finder, attr=None, text=None, parent=None, num=None, visible=False, tag_name=None, case_insensitive=True, throw_exception=None):
         """
         A customized locator for Mobile
         :param desc: Description of locator
@@ -22,11 +18,7 @@ class SlickMobileLocator:
         :param tag_name:
         :param case_insensitive:
         :param throw_exception:
-        :param app: Instance of the SlickMobileApp
         """
-        if not isinstance(app, SlickMobileApp):
-            raise Exception("Need to pass in an instance of the SlickMobileApp")
-
         if not isinstance(finder, Find):
             raise Exception("finder is not of type Find")
 
@@ -46,9 +38,6 @@ class SlickMobileLocator:
         self.case_insensitive = case_insensitive
         self.throw_exception = throw_exception
 
-        self.app = app
-        self.driver = app.driver
-        """:type: appium.webdriver.Remote"""
         self.locator = WebElementLocator(desc, finder)
         """:type: MobileElementLocator"""
         self.element = None
@@ -57,15 +46,22 @@ class SlickMobileLocator:
         """:type: list[WebElement]"""
 
         self.app_init_timeout = 180
-        self.is_ios = Gen.is_ios()
-        self.is_android = Gen.is_android()
-        self.init_default_attr()
+        self.is_android = False
+        self.is_ios = False
+        
+    @property
+    def app(self):
+        """
+        This needs to be instantiated from a child class and should be of type appium.webdriver.Remote
+        """
+        raise NotImplementedError("Need to get the app from somewhere")
 
-    def init_default_attr(self):
-        """
-        Setting up the default attribute if it is not set
-        :return:
-        """
+    @property
+    def driver(self):
+        """:type: appium.webdriver.Remote"""
+        return self.app.driver
+
+    def init_attr(self):
         if self.attr is None:
             if self.is_android:
                 self.attr = "text"
@@ -81,8 +77,7 @@ class SlickMobileLocator:
         self.elements = []
 
     def print_page_source(self):
-        import mobile_utils
-        print(mobile_utils.get_page_source()
+        print(self.app.get_page_source())
 
     def gimme(self, timeout=10, log=True, throw_exception=False, num=None):
         """
@@ -258,7 +253,7 @@ class SlickMobileLocator:
         """
 
         attempt = 1
-        print("\nWaiting {} seconds for: {} to be".format(timeout, description)
+        print("\nWaiting {} seconds for: {} to be".format(timeout, description))
         timer = Timer(timeout)
         last_result = False
         error_message = None
@@ -270,14 +265,14 @@ class SlickMobileLocator:
             try:
                 last_result = func()
             except Exception as e:
-                print(e.message
+                print(e.message)
                 error_message = e.message
 
-            print("Still not found... attempt: {}".format(attempt)
+            print("Still not found... attempt: {}".format(attempt))
             time.sleep(interval)
             attempt += 1
 
-        print("Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        print("Wait for tried: {} times in {} seconds".format(attempt, timeout))
         if throw_exception and not last_result:
             raise Exception("Timeout failed with: {}".format(error_message))
 
@@ -295,7 +290,7 @@ class SlickMobileLocator:
         :return:
         """
         attempt = 1
-        print("\nWaiting {} seconds for: {} to not be".format(timeout, description)
+        print("\nWaiting {} seconds for: {} to not be".format(timeout, description))
         timer = Timer(timeout)
         last_result = False
         error_message = None
@@ -307,14 +302,14 @@ class SlickMobileLocator:
             try:
                 last_result = func()
             except Exception as e:
-                print(e.message
+                print(e.message)
                 error_message = e.message
 
-            print("Still found... attempt: {}".format(attempt)
+            print("Still found... attempt: {}".format(attempt))
             time.sleep(interval)
             attempt += 1
 
-        print("Wait for tried: {} times in {} seconds".format(attempt, timeout)
+        print("Wait for tried: {} times in {} seconds".format(attempt, timeout))
         if last_result:
             if throw_exception:
                 raise Exception("Timeout failed with: {}".format(error_message))
@@ -431,7 +426,7 @@ class SlickMobileLocator:
             elif raise_exception:
                 raise Exception(msg)
             else:
-                print(msg
+                print(msg)
                 return False
 
         if offset_x != 1 or offset_y != 1:
@@ -451,7 +446,7 @@ class SlickMobileLocator:
         if positions:
             self.app.tap_position(positions=positions, count=count, duration=duration, wait=wait, log=log)
         else:
-            for i in xrange(count):
+            for i in range(count):
                 self.element.click()
 
         return True

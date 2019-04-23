@@ -36,19 +36,14 @@ class SlickMobileApp(Browser):
         wdlogger.setLevel(logging.WARNING)
         self.logger = logging.getLogger("slickwd.Appium")
 
-        # self.wd_instance = appium.webdriver.Remote(command_executor=remote_url, desired_capabilities=desired_capabilities)
-        # self.driver = self.wd_instance
-        # self.driver.implicitly_wait(0)
-
-        self.platform_name = self.get_capabilities()['platformName'].lower()
-        self.device_name = self.get_capabilities()['deviceName'].lower()
-        self.target_device = "{}_{}".format(self.platform_name, self.get_version())
-        self.get_image_multiplier()
-
         # Screenshot properties
         self.unique_screenshots = True
         self.screenshot_dir = None
         self.screenshot_blob = None
+
+        # self.wd_instance = appium.webdriver.Remote(command_executor=remote_url, desired_capabilities=desired_capabilities)
+        # self.driver = self.wd_instance
+        # self.driver.implicitly_wait(0)
 
     @property
     def touch_action(self):
@@ -60,6 +55,15 @@ class SlickMobileApp(Browser):
         This needs to be instantiated from a child class and should be of type appium.webdriver.Remote
         """
         raise NotImplementedError("Need to get the driver from somewhere")
+
+    def init_stuff(self):
+        self.platform_name = self.get_capabilities()['platformName'].lower()
+        self.device_name = self.get_capabilities()['deviceName'].lower()
+        self.target_device = "{}_{}".format(self.platform_name, self.get_version())
+        self.get_image_multiplier()
+
+    def get_page_source(self, encoder="utf-8"):
+        self.driver.execute(Command.GET_PAGE_SOURCE)['value'].encode(encoder)
 
     def set_log_level(self, level):
         self.logger.setLevel(level)
