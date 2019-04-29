@@ -265,8 +265,8 @@ class SlickMobileLocator:
             try:
                 last_result = func()
             except Exception as e:
-                print(e.message)
-                error_message = e.message
+                print(e)
+                error_message = e
 
             print("Still not found... attempt: {}".format(attempt))
             time.sleep(interval)
