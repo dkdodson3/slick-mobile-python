@@ -338,12 +338,12 @@ class SlickMobileApp(Browser):
         touch_action.release()
         touch_action.perform()
 
-    def scroll_to_element(self, locator, direction="UP", amount=100, start_x=None, start_y=None, allowed=10, timeout=5):
+    def scroll_to_element(self, locator, direction="UP", amount=100, start_x=None, start_y=None, swipe=False, allowed=10, timeout=5):
         for i in range(allowed):
             if locator.is_displayed(timeout=timeout, log=False):
                 return True
 
-            self.flick(direction=direction, amount=amount, start_x=start_x, start_y=start_y)
+            self.flick(direction=direction, amount=amount, start_x=start_x, start_y=start_y, swipe=swipe)
 
         return False
 
@@ -372,7 +372,7 @@ class SlickMobileApp(Browser):
 
         if self.is_android():
             if swipe:
-                self.driver.swipe(start_x, start_y, end_x, end_y, duration=100)
+                self.driver.swipe(start_x, start_y, end_x, end_y, duration=200)
             else:
                 self.driver.flick(start_x, start_y, end_x, end_y)
 
