@@ -179,7 +179,7 @@ class Gen:
 
     @staticmethod
     def get_element_contains(element_type, value, text):
-        from slick_mobile_locator import SlickMobileLocator, Find
+        from .slick_mobile_locator import SlickMobileLocator, Find
         return SlickMobileLocator("Element contains text for value xpath", Find.by_xpath('//{}[{}]'.format(element_type, Gen.get_xpath_contains(value, text))))
 
     @staticmethod

@@ -4,7 +4,8 @@ from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver import WebElement
 from selenium.webdriver.remote.command import Command
 from slickwd import Browser, Find
-from slick_mobile_locator import SlickMobileLocator
+from .slick_mobile_locator import SlickMobileLocator
+from .slick_mobile_utils import get_epoch_time
 
 
 class SlickMobileApp(Browser):
@@ -421,7 +422,6 @@ class SlickMobileApp(Browser):
                 os.remove(filepath)
 
     def save_screenshot(self, screenshot_blob):
-        from utils import get_epoch_time
         if self.screenshot_dir is None:
             print("Screenshot directory is: {}".format(self.screenshot_dir))
             return

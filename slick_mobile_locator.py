@@ -173,7 +173,7 @@ class SlickMobileLocator:
         if isinstance(self.parent, WebElement):
             self.elements = self.locator.find_all_elements_from_parent_element(self.parent, wd_browser=self.driver, timeout=timeout, log=log)
         else:
-            if self.parent.exists(timeout=timeout, log=log, throw_exception=True, refresh=refresh):
+            if self.parent.exists(timeout=timeout, log=log, throw_exception=self.parent.throw_exception, refresh=refresh):
                 self.elements = self.locator.find_all_elements_from_parent_element(self.parent.element, wd_browser=self.driver, timeout=timeout, log=log)
 
         return self
