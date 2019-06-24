@@ -342,6 +342,11 @@ class SlickMobileLocator:
         if self.is_android:
             displayed = element.is_displayed()
         else:
+            # Need to verify false positives
+            if not element.is_displayed():
+                return False
+
+            # If ios says it is visible verify that it is on the screen
             displayed = self.is_element_on_screen(element)
 
         return displayed

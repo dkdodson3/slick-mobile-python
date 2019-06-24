@@ -8,18 +8,22 @@ def get_epoch_time():
     int(round(time.time() * 1000))
 
 
-def run_local(command, detatch=False, shell=True, raise_assertion=False):
-    from subprocess import call
+def run_local(command, detatch=False, shell=True, raise_assertion=False, value=False):
+    from subprocess import call, check_output
     if detatch:
         command = "{} > /dev/null 2>&1 &".format(command)
 
     print(command)
-    ret_code = call(command, shell=shell) == 0
+    if not value:
+        ret_code = call(command, shell=shell) == 0
 
-    if raise_assertion and not ret_code:
-        raise Exception("Command failed: {}".format(command))
+        if raise_assertion and not ret_code:
+            raise Exception("Command failed: {}".format(command))
 
-    return ret_code
+        return ret_code
+
+    else:
+        return check_output(command, shell=shell)
 
 
 def is_truthy(value):
