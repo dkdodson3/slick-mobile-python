@@ -421,6 +421,24 @@ class SlickMobileLocator:
 
         return True
 
+    def tap_parent(self, timeout=10, log=True, num=None, throw_exception=False, refresh=True, count=1):
+        parent = self.get_parent(timeout=timeout, log=log, num=num, refresh=refresh, throw_exception=throw_exception)
+
+        if parent:
+            for i in range(count):
+                parent.element.click()
+
+            return True
+
+        return False
+
+    def get_parent(self, timeout=10, log=True, num=None, throw_exception=False, refresh=True):
+        if refresh or self.element is None:
+            self.exists(timeout=timeout, log=log, num=num, refresh=refresh, throw_exception=throw_exception)
+
+        if self.element and self.parent and self.parent.element:
+            return self.parent
+
     def tap(self, timeout=10, count=1, offset_x=1, offset_y=1, log=True, wait=0, raise_exception=True, duration=50, num=None, refresh=True, wait_for_interval=.5):
         positions = []
 
