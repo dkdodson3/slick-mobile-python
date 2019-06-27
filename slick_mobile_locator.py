@@ -124,7 +124,7 @@ class SlickMobileLocator:
         :param throw_exception:
         :return: SlickMobileLocator
         """
-        if self.parent is not None:
+        if isinstance(self.parent, SlickMobileLocator):
             self.deliver(timeout=timeout, log=log)
         else:
             self.elements = self.locator.find_all_elements_matching(self.driver, timeout=timeout, log=log)
@@ -173,9 +173,16 @@ class SlickMobileLocator:
         if isinstance(self.parent, WebElement):
             self.elements = self.locator.find_all_elements_from_parent_element(self.parent, wd_browser=self.driver, timeout=timeout, log=log)
         else:
+            if self.parent and self.parent.parent is None:
+                self.parent.parent = True
+
             if self.parent.exists(timeout=timeout, log=log, throw_exception=self.parent.throw_exception, refresh=refresh):
                 self.elements = self.locator.find_all_elements_from_parent_element(self.parent.element, wd_browser=self.driver, timeout=timeout, log=log)
-
+                # for element in self.parent.elements:
+                #     ret_val = self.locator.find_all_elements_from_parent_element(element, wd_browser=self.driver, timeout=timeout, log=log)
+                #     if ret_val:
+                #         self.element = ret_val[0]
+                #         break
         return self
 
     def get_locator_num(self, num=None):
