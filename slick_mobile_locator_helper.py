@@ -11,6 +11,7 @@ class Gen:
 
     # ANDROID
     ACTION_BAR_TAB = None
+    ANDROID_HOME = 3
     ANDROID_ID = None
     ANDROID_CHROME_ID = None
     ANDROID_INSTALLER_ID = None
@@ -69,9 +70,7 @@ class Gen:
     @staticmethod
     def get_target():
         if Gen.TARGET is None:
-            print "GETTING THE TARGET FROM TESTCONFIG"
-            from mobile_utils import get_config_option
-            Gen.set_target(get_config_option("mobile", "target"))
+            raise Exception("Target was not set. {}".format(Gen.TARGET))
 
         return Gen.TARGET
 
@@ -80,7 +79,7 @@ class Gen:
         if target is None:
             raise Exception("**** Gen TARGET cannot be set to None, Check your config file. ****")
 
-        print "SETTING Gen TARGET: {}".format(target)
+        print("SETTING Gen TARGET: {}".format(target))
         Gen.TARGET = target.lower()
         if "ios" in target:
             Gen.set_ios()
@@ -180,7 +179,7 @@ class Gen:
 
     @staticmethod
     def get_element_contains(element_type, value, text):
-        from slick_mobile_locator import SlickMobileLocator, Find
+        from .slick_mobile_locator import SlickMobileLocator, Find
         return SlickMobileLocator("Element contains text for value xpath", Find.by_xpath('//{}[{}]'.format(element_type, Gen.get_xpath_contains(value, text))))
 
     @staticmethod
