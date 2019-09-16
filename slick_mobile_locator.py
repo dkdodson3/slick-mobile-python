@@ -124,10 +124,13 @@ class SlickMobileLocator:
         :param throw_exception:
         :return: SlickMobileLocator
         """
-        if isinstance(self.parent, SlickMobileLocator):
+        if self.parent and isinstance(self.parent, SlickMobileLocator):
             self.deliver(timeout=timeout, log=log)
         else:
             self.elements = self.locator.find_all_elements_matching(self.driver, timeout=timeout, log=log)
+
+        if self.elements is None:
+            self.elements = []
 
         if len(self.elements) < 1:
             if (self.throw_exception is None and throw_exception) or self.throw_exception:
