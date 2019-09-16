@@ -341,6 +341,18 @@ class SlickMobileApp(Browser):
 
     def scroll_to_element(self, locator, direction="UP", amount=100, start_x=None, start_y=None, swipe=False, allowed=10, timeout=5):
         for i in range(allowed):
+            # This was a hack
+            # # This is needed if the parent shows up but the child is still not displayed
+            # if locator.parent and isinstance(locator.parent, SlickMobileLocator):
+            #     if locator.parent.is_displayed(timeout=timeout, log=False):
+            #         locator.parent = None
+            #
+            #         if locator.is_displayed():
+            #             return True
+            # else:
+            #     if locator.is_displayed(timeout=timeout, log=False):
+            #         return True
+
             if locator.is_displayed(timeout=timeout, log=False):
                 return True
 
