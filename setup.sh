@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-if [ $(uname) = "Darwin" ]; then
+if [[ $(uname) = "Darwin" ]]; then
     brew install imagemagick@6
-else:
+else
     sudo apt-get update &&
     sudo apt-get install -y imagemagick libmagickwand-dev
 fi
 
-pip install -r requirements.txt
+pip install -r requirements.txt --upgrade
