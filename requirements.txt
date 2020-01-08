@@ -1,6 +1,5 @@
 slick-webdriver==1.0.66
 Appium-Python-Client
-pocketsphinx
 Wand
 textract
 pyocr
