@@ -7,4 +7,4 @@ else
     sudo apt-get install -y imagemagick libmagickwand-dev
 fi
 
-pip install -r requirements.txt --upgrade
+pip3 install -r requirements.txt --upgrade
